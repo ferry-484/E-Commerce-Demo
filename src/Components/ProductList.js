@@ -1,60 +1,112 @@
-import React, { useEffect, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
+import React, { useEffect, useState } from "react";
+import "../App.css";
 
-function ProductList() {
-    let [products, setProducts] = useState([]);
-    const [cartItems, setCartItems] = useState([]);
-    const [searchValue, setSearchValue] = useState('');
+function ProductList(props) {
+  let [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  useEffect(() => {
+    showProducts();
+  }, [cartItems]);
 
-    const element = <FontAwesomeIcon icon={faShoppingCart} />
+  const [searchItem, setSearchItem] = useState("");
 
-    useEffect(() => {
-        getProducts();
+  //fetch the products and store them into the localstore
+  const showProducts = async () => {
+    let productList = await fetch("https://fakestoreapi.com/products");
+    productList = await productList.json();
+    setProducts(productList);
+    setCartItems(JSON.parse(localStorage.getItem("cartItems")) || []);
+  };
+  //const [loading, setLoading] = useState(false);
+
+  const addToCart = (product) => {
+    // setLoading(true);
+    // console.log(loading);
+    // await new Promise((resolve) =>
+    //   setTimeout(() => {
+    //     resolve();
+    //   }, 2000)
+    // );
+    // setLoading(false);
+    // console.log(loading);
+    product["quantity"] = 1;
+    cartItems.push(product);
+    // add the products into cart
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  };
+
+  const viewCart = () => {
+    props.history.push({
+      pathname: "/view",
     });
-    
-    const getProducts = async () => {
-        let productList = await fetch('https://fakestoreapi.com/products');
-        productList = await productList.json();
-        setProducts(productList);
-        setCartItems(JSON.parse(localStorage.getItem('cartItems')) || []);
-    }
+  };
 
-    const addToCart = (product) => {
-        cartItems.push(product);
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    }
-
-    return (
-        <div className="productslist">
-            <div style={{display: 'flex', padding: '20px'}}>
-                <h2 style={{width: '100%'}}>
-                    <span style={{float: 'left', marginLeft: '10px'}}>Products Page</span>
-                    <input onChange={event => setSearchValue(event.target.value)} value={searchValue} type="text" placeholder="Enter product name to search..." style={{width: '50%', height: '40px', fontSize: '16px'}}></input>
-                    <div style={{float: 'right', marginRight: '10px'}}>
-                        <span>{element} {cartItems.length || ''}</span>
-                    </div>
-                </h2>
-            </div>
-            {products.filter(product => {
-                if(!searchValue) {return true} else return product.title.toLowerCase().includes(searchValue.toLowerCase())
-            }).map(product => {
-                return(
-                    <div key={product.id} style={{display: 'inline-block', backgroundColor: '#F2A782', padding: '30px', margin: '10px', boxShadow: '0px 0px 12px #000', width: '250px', height: '250px'}}>
-                        <img src={product.image} style={{width: '200px', height: '200px'}} alt={product.id}></img>
-                        <div style={{display: 'flex'}}>
-                            <span style={{float: 'left', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap'}} title={product.title}>{product.title}</span>
-                            <span style={{float: 'right'}}>${product.price}</span>
-                        </div>
-                        <div>
-                            <button onClick={() => addToCart(product)}>Add to cart</button>
-                            <button>Shop Now</button>
-                        </div>
-                    </div>
-                )
-            })}
-        </div>
-    )
+  return (
+    //display the products on screen
+    <div className="productslist">
+      <div style={{ display: "flex", padding: "20px" }}>
+        <h2 style={{ width: "100%" }}>
+          <span style={{ float: "left", marginLeft: "10px" }}>
+            Products Page
+          </span>
+          <input
+            type="text"
+            className="search"
+            placeholder="Search Something!!"
+            onChange={(event) => setSearchItem(event.target.value)}
+            value={searchItem}
+          ></input>
+          <div>
+            <span>
+              <button className="viewCart" onClick={viewCart}>
+                View Cart{cartItems.length}
+              </button>
+            </span>
+          </div>
+        </h2>
+      </div>
+      {products.length > 0 ? (
+        products
+          .filter((product) => {
+            if (!searchItem) {
+              return true;
+            } else
+              return product.title
+                .toLowerCase()
+                .includes(searchItem.toLowerCase());
+          })
+          .map((product) => {
+            return (
+              <div className="card">
+                <img
+                  src={product.image}
+                  style={{ width: 100 }}
+                  alt={product.id}
+                ></img>
+                <div style={{ display: "flex" }}>
+                  <span
+                    style={{ float: "left", overflow: "hidden" }}
+                    title={product.title}
+                  >
+                    {product.title}
+                  </span>
+                  <span className="price">${product.price}</span>
+                </div>
+                <div>
+                  <button onClick={() => addToCart(product)}>
+                    Add to cart
+                  </button>
+                </div>
+                <br />
+                <button>Shop Now</button>
+              </div>
+            );
+          })
+      ) : (
+        <h2>No Product..Add Something!!</h2>
+      )}
+    </div>
+  );
 }
 
-export default ProductList
+export default ProductList;
