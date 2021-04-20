@@ -36,16 +36,3 @@
     transform: rotate(360deg);
   }
 }
-
-.productslist {
-  background-color: aquamarine;
-  text-align: center;
-}
-
-body {
-  background-color: #a4b69c;
-}
-
-.loginpage {
-  margin-top: 20%;
-}
